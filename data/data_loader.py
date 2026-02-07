@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Subset, random_split
@@ -7,7 +6,7 @@ from typing import Tuple
 
 SEED = 42
 
-class HSGSP_DataLoader:
+class DataLoader:
     """Unified dataset loader for HSGSP project"""
 
     def __init__(self, config):
@@ -29,7 +28,7 @@ class HSGSP_DataLoader:
             def __iter__(self):
                 for batch in self.dl:
                     images, labels = batch
-                    labels = labels.float()
+                    labels = labels.long()
                     if torch.rand(1).item() < self.prob:
                         gamma1 = torch.distributions.gamma.Gamma(self.alpha, 1.0).sample()
                         gamma2 = torch.distributions.gamma.Gamma(self.alpha, 1.0).sample()
@@ -39,10 +38,10 @@ class HSGSP_DataLoader:
                         shuffled_images = images[indices]
                         shuffled_labels = labels[indices]
                         mixed_images = lam * images + (1.0 - lam) * shuffled_images
-                        mixed_labels = lam * labels + (1.0 - lam) * shuffled_labels
+                        mixed_labels = lam * torch.nn.functional.one_hot(labels, num_classes=10).float() + (1.0 - lam) * torch.nn.functional.one_hot(shuffled_labels, num_classes=10).float()
                         yield mixed_images, mixed_labels
                     else:
-                        yield images, labels
+                        yield images, torch.nn.functional.one_hot(labels, num_classes=10).float()
 
             def __len__(self):
                 return len(self.dl)

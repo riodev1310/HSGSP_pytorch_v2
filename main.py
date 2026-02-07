@@ -1,6 +1,9 @@
 import os
 import argparse
+from altair import ParseValue
 import torch
+import copy
+import torch.nn as nn
 
 from config import Config
 from utils.logger import Logger
@@ -34,7 +37,7 @@ def _build_model(config: Config, task: str):
             num_classes=config.num_classes_cifar100,
             input_shape=config.input_shape_cifar100,
         )
-    raise ValueError(f"Unsupported task for VGG16: {task}")
+    raise ParseValue(f"Unsupported task for VGG16: {task}")
 
 def main(args):
     config = Config(task=args.task)
@@ -55,11 +58,11 @@ def main(args):
     pruned_model = None
     if args.pruned_model_path:
         logger.info(f"Loading pruned model from {args.pruned_model_path}")
-        pruned_model = torch.load(args.pruned_model_path)
+        pruned_model = torch.load(args.pruned_model_path, map_location='cpu')
 
     if args.model_path:
         logger.info(f"Loading model from {args.model_path}")
-        model = torch.load(args.model_path)
+        model = torch.load(args.model_path, map_location='cpu')
     else:
         logger.info('Building new model...')
         model = _build_model(config, args.task)
@@ -86,8 +89,7 @@ def main(args):
 
     baseline_for_eval = None
     if args.eval:
-        baseline_for_eval = model.clone()  # No direct clone in PyTorch, use copy.deepcopy or state_dict
-        baseline_for_eval.load_state_dict(model.state_dict())
+        baseline_for_eval = copy.deepcopy(model)
 
     hybrid_history = None
     if args.prune:
@@ -127,9 +129,6 @@ def main(args):
             learning_rate=config.simple_finetune_lr,
             log_dir_suffix="manual_finetune",
             train_eval_dataloader=train_clean_dl,
-            # teacher_model=model if bool(model) else None,
-            # kd_alpha=config.distill_alpha,
-            # kd_temperature=config.distill_temperature
         )
         model = tuned_model
         pruned_model = tuned_model

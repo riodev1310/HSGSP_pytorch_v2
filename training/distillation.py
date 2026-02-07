@@ -27,8 +27,21 @@ class Distiller(nn.Module):
     def forward(self, x):
         return self.student(x)
 
-    def train_step(self, x, y):
-        # Implement in training loop
-        pass
+    def train_step(self, x, y_true, optimizer):
+        optimizer.zero_grad()
+        y_student = self.student(x)
+        y_teacher = self.teacher(x)
 
-    # Similar to TF, but use in custom loop
+        student_loss = self.student_loss_fn(y_student, y_true)
+
+        T = self.temperature
+        p_teacher_t = torch.nn.functional.softmax(y_teacher / T, dim=-1)
+        p_student_t = torch.nn.functional.log_softmax(y_student / T, dim=-1)
+        distill_loss = self.distillation_loss_fn(p_student_t, p_teacher_t) * (T * T)
+
+        total_loss = self.alpha * student_loss + (1.0 - self.alpha) * distill_loss
+
+        total_loss.backward()
+        optimizer.step()
+
+        return total_loss, student_loss, distill_loss
