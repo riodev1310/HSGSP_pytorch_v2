@@ -6,7 +6,7 @@ from typing import Tuple
 
 SEED = 42
 
-class DataLoader:
+class HSGSP_DataLoader:
     """Unified dataset loader for HSGSP project"""
 
     def __init__(self, config):

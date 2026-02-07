@@ -7,14 +7,14 @@ import torch.nn as nn
 
 from config import Config
 from utils.logger import Logger
-from data.data_loader import DataLoader
+from data.data_loader import HSGSP_DataLoader
 from models.vgg16 import VGG16
 from training.trainer import HSGSPTrainer
 from training.evaluator import ModelEvaluator
 from utils.visualization import Visualizer
 from pruning.hybrid_baseline import HybridFrequencyBaseline
 
-def _load_datasets(data_loader: DataLoader, task: str, logger: Logger):
+def _load_datasets(data_loader: HSGSP_DataLoader, task: str, logger: Logger):
     if task == 'cifar10':
         logger.info('Loading CIFAR-10 dataset...')
         train_dl, val_dl, test_dl, train_clean_dl = data_loader.load_cifar10()
@@ -47,7 +47,7 @@ def main(args):
     logger = Logger(config)
     logger.info('Starting hybrid pruning experiment')
 
-    data_loader = DataLoader(config)
+    data_loader = HSGSP_DataLoader(config)
     trainer = HSGSPTrainer(config)
     evaluator = ModelEvaluator(config)
     visualizer = Visualizer(config)
