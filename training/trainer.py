@@ -143,17 +143,18 @@ class HSGSPTrainer:
             train_correct = 0
             total = 0
 
-            for batch in train_dataloader:
+            for batch in tqdm(train_dataloader, desc=f"Epoch {epoch+1}/{epochs} - Training"):
                 inputs, labels = batch
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
+                loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
-                train_correct += correct
+                _, predicted = outputs.max(1)
                 total += labels.size(0)
+                train_correct += predicted.eq(labels).sum().item()
 
             train_acc = train_correct / total
             train_loss /= len(train_dataloader)
@@ -163,14 +164,15 @@ class HSGSPTrainer:
             val_correct = 0
             total = 0
             with torch.no_grad():
-                for batch in val_dataloader:
+                for batch in tqdm(val_dataloader, desc=f"Epoch {epoch+1}/{epochs} - Validation"):
                     inputs, labels = batch
                     inputs, labels = inputs.to(device), labels.to(device)
                     outputs = model(inputs)
-                    loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
+                    loss = criterion(outputs, labels)
                     val_loss += loss.item()
-                    val_correct += correct
+                    _, predicted = outputs.max(1)
                     total += labels.size(0)
+                    val_correct += predicted.eq(labels).sum().item()
 
             val_acc = val_correct / total
             val_loss /= len(val_dataloader)
@@ -230,17 +232,18 @@ class HSGSPTrainer:
             train_correct = 0
             total = 0
 
-            for batch in train_dataloader:
+            for batch in tqdm(train_dataloader, desc=f"Fine-tune Epoch {epoch+1}/{epochs} - Training"):
                 inputs, labels = batch
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
+                loss = criterion(outputs, labels)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
-                train_correct += correct
+                _, predicted = outputs.max(1)
                 total += labels.size(0)
+                train_correct += predicted.eq(labels).sum().item()
 
             train_acc = train_correct / total
             train_loss /= len(train_dataloader)
@@ -250,14 +253,15 @@ class HSGSPTrainer:
             val_correct = 0
             total = 0
             with torch.no_grad():
-                for batch in val_dataloader:
+                for batch in tqdm(val_dataloader, desc=f"Fine-tune Epoch {epoch+1}/{epochs} - Validation"):
                     inputs, labels = batch
                     inputs, labels = inputs.to(device), labels.to(device)
                     outputs = model(inputs)
-                    loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
+                    loss = criterion(outputs, labels)
                     val_loss += loss.item()
-                    val_correct += correct
+                    _, predicted = outputs.max(1)
                     total += labels.size(0)
+                    val_correct += predicted.eq(labels).sum().item()
 
             val_acc = val_correct / total
             val_loss /= len(val_dataloader)
