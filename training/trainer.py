@@ -149,13 +149,12 @@ class HSGSPTrainer:
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                loss = criterion(outputs, labels)
+                loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
-                _, predicted = outputs.max(1)
                 total += labels.size(0)
-                train_correct += predicted.eq(labels).sum().item()
+                train_correct += correct
 
             train_acc = train_correct / total
             train_loss /= len(train_dataloader)
@@ -169,11 +168,10 @@ class HSGSPTrainer:
                     inputs, labels = batch
                     inputs, labels = inputs.to(device), labels.to(device)
                     outputs = model(inputs)
-                    loss = criterion(outputs, labels)
+                    loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
                     val_loss += loss.item()
-                    _, predicted = outputs.max(1)
                     total += labels.size(0)
-                    val_correct += predicted.eq(labels).sum().item()
+                    val_correct += correct
 
             val_acc = val_correct / total
             val_loss /= len(val_dataloader)
@@ -238,13 +236,12 @@ class HSGSPTrainer:
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 outputs = model(inputs)
-                loss = criterion(outputs, labels)
+                loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
                 loss.backward()
                 optimizer.step()
                 train_loss += loss.item()
-                _, predicted = outputs.max(1)
                 total += labels.size(0)
-                train_correct += predicted.eq(labels).sum().item()
+                train_correct += correct
 
             train_acc = train_correct / total
             train_loss /= len(train_dataloader)
@@ -258,11 +255,10 @@ class HSGSPTrainer:
                     inputs, labels = batch
                     inputs, labels = inputs.to(device), labels.to(device)
                     outputs = model(inputs)
-                    loss = criterion(outputs, labels)
+                    loss, correct = self.compute_loss_and_acc(outputs, labels, criterion)
                     val_loss += loss.item()
-                    _, predicted = outputs.max(1)
                     total += labels.size(0)
-                    val_correct += predicted.eq(labels).sum().item()
+                    val_correct += correct
 
             val_acc = val_correct / total
             val_loss /= len(val_dataloader)
