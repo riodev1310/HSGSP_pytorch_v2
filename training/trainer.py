@@ -16,6 +16,7 @@ from training.frequency_regularizer import (
     FrequencyRegularizedModel,
     SpectralEntropyRegularizer,
 )
+from tqdm import tqdm
 
 class HSGSPTrainer:
     """Training manager for HSGSP pruning"""
