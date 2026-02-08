@@ -469,15 +469,15 @@ class HybridFrequencyBaseline:
         dataloader: torch.utils.data.DataLoader,
     ) -> Dict[str, np.ndarray]:
         model.eval()
-        saliency = {}
+        saliency = None
         for batch in dataloader:
             inputs, labels = batch
-            inputs = inputs.to(next(model.parameters()).device).requires_grad_(True)
+            inputs = inputs.to(next(model.parameters()).device)
             outputs = model(inputs)
             loss = nn.CrossEntropyLoss()(outputs, labels)
             loss.backward()
             grad = inputs.grad.abs().mean(dim=[0, 2, 3]).cpu().numpy()
-            if not saliency:
+            if saliency is None:
                 saliency = grad
             else:
                 saliency += grad
