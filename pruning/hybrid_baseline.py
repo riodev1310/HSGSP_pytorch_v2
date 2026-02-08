@@ -469,19 +469,29 @@ class HybridFrequencyBaseline:
         dataloader: torch.utils.data.DataLoader,
     ) -> Dict[str, np.ndarray]:
         model.eval()
-        saliency = None
+        saliency = {}
+        device = next(model.parameters()).device
         for batch in dataloader:
             inputs, labels = batch
-            inputs = inputs.to(next(model.parameters()).device)
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+            model.zero_grad()
             outputs = model(inputs)
             loss = nn.CrossEntropyLoss()(outputs, labels)
             loss.backward()
-            grad = inputs.grad.abs().mean(dim=[0, 2, 3]).cpu().numpy()
-            if saliency is None:
-                saliency = grad
-            else:
-                saliency += grad
-        return {'grad_saliency': saliency / len(dataloader)}
+            for name, layer in model.named_modules():
+                if isinstance(layer, nn.Conv2d):
+                    if layer.weight.grad is None:
+                        continue
+                    grad = layer.weight.grad.abs().mean(dim=[1,2,3]).cpu().numpy()
+                    if name not in saliency:
+                        saliency[name] = grad
+                    else:
+                        saliency[name] += grad
+            model.zero_grad()
+        for name in saliency:
+            saliency[name] /= len(dataloader)
+        return saliency
 
     def _combine_scores(self, freq_scores: Dict[str, np.ndarray], grad_scores: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
         hybrid = {}
