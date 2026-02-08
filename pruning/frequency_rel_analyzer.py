@@ -79,16 +79,16 @@ class FrequencyRelevanceAnalyzer:
 
     def band_energies_from_kernel(self, kernel_np: np.ndarray):
         """Return band energies, ratios, and totals for a Conv2D kernel."""
-        h, w, _, cout = kernel_np.shape
+        cout, cin, h, w = kernel_np.shape
         k_torch = torch.from_numpy(kernel_np).float()
         X = self.dct2_ortho(k_torch)
         totals = torch.zeros((cout,), dtype=torch.float64)
         band_E: Dict[str, torch.Tensor] = {}
         for band, (lo, hi) in self.band_defs.items():
             mask = self.create_mask(h, w, lo, hi)
-            mask_torch = torch.from_numpy(mask).reshape(h, w, 1, 1).float()
+            mask_torch = torch.from_numpy(mask).float().unsqueeze(0).unsqueeze(0)
             coeffs = X * mask_torch
-            energy = torch.sqrt(torch.sum(torch.square(coeffs), dim=(0, 1, 2)))
+            energy = torch.sqrt(torch.sum(torch.square(coeffs), dim=(1, 2, 3)))
             band_E[band] = energy.double()
             totals += energy.double()
         eps = 1e-12
@@ -100,7 +100,7 @@ class FrequencyRelevanceAnalyzer:
         band_G: Dict[str, torch.Tensor] = {}
         for band, (lo, hi) in self.band_defs.items():
             mask = self.create_mask(grad.shape[2], grad.shape[3], lo, hi)
-            mask_torch = torch.from_numpy(mask).to(grad.device).view(1, 1, grad.shape[2], grad.shape[3]).float()
+            mask_torch = torch.from_numpy(mask).to(grad.device).unsqueeze(0).unsqueeze(0).float()
             coeffs = G * mask_torch
             energy = torch.sqrt(torch.sum(coeffs ** 2, dim=(1, 2, 3)))
             band_G[band] = energy.double()
