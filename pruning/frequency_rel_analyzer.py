@@ -3,8 +3,6 @@ import torch.nn as nn
 import numpy as np
 from typing import Dict, Tuple, List, Sequence, Optional
 
-from models.model_utils import ModelUtils
-
 class FrequencyRelevanceAnalyzer:
     def __init__(self, config):
         self.config = config
@@ -97,30 +95,14 @@ class FrequencyRelevanceAnalyzer:
         ratios = {band: band_E[band] / (totals + eps) for band in band_E}
         return band_E, ratios, totals
 
-    def band_grad_energies_from_batch(
-        self,
-        model: nn.Module,
-        layer: nn.Module,
-        xb: torch.Tensor,
-        yb: torch.Tensor,
-        from_logits: bool,
-    ) -> Dict[str, torch.Tensor]:
-        """Gradient-based Taylor energies split per frequency band for one batch."""
-        criterion = nn.CrossEntropyLoss()
-        outputs = model(xb)
-        loss = criterion(outputs, yb)
-        loss.backward()
-        grad = layer.weight.grad
-        if grad is None:
-            return {band: torch.zeros((layer.out_channels,), dtype=torch.float64) for band in self.band_defs}
-
+    def compute_band_grad_energies(self, grad: torch.Tensor) -> Dict[str, torch.Tensor]:
         G = self.dct2_ortho(grad)
         band_G: Dict[str, torch.Tensor] = {}
         for band, (lo, hi) in self.band_defs.items():
-            mask = self.create_mask(G.shape[0], G.shape[1], lo, hi)
-            mask_torch = torch.from_numpy(mask).reshape(G.shape[0], G.shape[1], 1, 1).float().to(G.device)
+            mask = self.create_mask(grad.shape[2], grad.shape[3], lo, hi)
+            mask_torch = torch.from_numpy(mask).to(grad.device).view(1, 1, grad.shape[2], grad.shape[3]).float()
             coeffs = G * mask_torch
-            energy = torch.sqrt(torch.sum(torch.square(coeffs), dim=(0, 1, 2)))
+            energy = torch.sqrt(torch.sum(coeffs ** 2, dim=(1, 2, 3)))
             band_G[band] = energy.double()
         return band_G
 
@@ -135,29 +117,42 @@ class FrequencyRelevanceAnalyzer:
         binary_targets = bool(getattr(self.config, "frn_low_vs_rest", False))
         num_classes = 2 if binary_targets else 3
 
-        conv_layers = ModelUtils.get_conv_layers(model)
+        conv_layers = [(name, module) for name, module in model.named_modules() if isinstance(module, nn.Conv2d)]
         if not conv_layers:
             return np.zeros((0, num_classes), np.float32), np.zeros((0, num_classes), np.float32)
 
-        grad_acc: Dict[str, Dict[str, np.ndarray]] = {l.name: None for l in conv_layers if hasattr(l, 'name')}
+        grad_acc: Dict[str, Dict[str, np.ndarray]] = {name: None for name, _ in conv_layers}
 
-        for xb, yb in dataloader:
-            xb = xb.float()
-            for layer in conv_layers:
-                band_grads = self.band_grad_energies_from_batch(model, layer, xb, yb, from_logits)
-                if grad_acc[layer.name] is None:
-                    grad_acc[layer.name] = {band: val.numpy().copy() for band, val in band_grads.items()}
+        device = next(model.parameters()).device
+        criterion = nn.CrossEntropyLoss()
+
+        for batch_idx, (xb, yb) in enumerate(dataloader):
+            xb = xb.to(device)
+            yb = yb.to(device)
+            model.zero_grad()
+            outputs = model(xb)
+            loss = criterion(outputs, yb)
+            loss.backward()
+            for name, layer in conv_layers:
+                grad = layer.weight.grad
+                if grad is None:
+                    continue
+                band_grads = self.compute_band_grad_energies(grad)
+                if grad_acc[name] is None:
+                    grad_acc[name] = {band: val.cpu().numpy().copy() for band, val in band_grads.items()}
                 else:
                     for band in self.band_defs:
-                        grad_acc[layer.name][band] += band_grads[band].numpy()
+                        grad_acc[name][band] += band_grads[band].cpu().numpy()
+            if batch_idx + 1 >= max_batches:
+                break
 
         X_list: List[np.ndarray] = []
         Y_list: List[np.ndarray] = []
-        for layer in conv_layers:
-            weights = layer.weight.detach().numpy()
+        for name, layer in conv_layers:
+            weights = layer.weight.detach().cpu().numpy()
             band_E, ratios, _ = self.band_energies_from_kernel(weights)
             cout = weights.shape[0]
-            grad_band = grad_acc.get(layer.name, {
+            grad_band = grad_acc.get(name, {
                 band: np.zeros((cout,), np.float64) for band in self.band_defs
             })
 
@@ -179,7 +174,7 @@ class FrequencyRelevanceAnalyzer:
                 Y = np.concatenate([low_col, other_col], axis=1)
                 Y = Y / (np.sum(Y, axis=1, keepdims=True) + eps)
             X = np.stack(
-                [ratios["low"].numpy(), ratios["mid"].numpy(), ratios["high"].numpy()],
+                [ratios["low"].cpu().numpy(), ratios["mid"].cpu().numpy(), ratios["high"].cpu().numpy()],
                 axis=1,
             )
             mask = np.isfinite(X).all(axis=1) & np.isfinite(Y).all(axis=1)
