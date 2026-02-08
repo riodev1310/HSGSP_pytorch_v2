@@ -270,8 +270,8 @@ class PruningStrategy:
                     continue
                 scores = importance_scores[name]
                 num_filters = len(scores)
-                ratio = float(layer_pruning_ratios.get(name, 0.0))
-                ratio = float(np.clip(ratio, 0.0, 0.95))
+                ratio = layer_pruning_ratios.get(name, 0.0)
+                ratio = np.clip(ratio, 0.0, 0.95)
                 keep = max(1, int(round(num_filters * (1.0 - ratio))))
                 idx_sorted = np.argsort(scores)
                 keep_idx = idx_sorted[-keep:]
