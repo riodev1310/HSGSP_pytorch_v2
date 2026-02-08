@@ -104,8 +104,8 @@ class HybridFrequencyBaseline:
             grad_scores = self._compute_gradient_saliency(current_model, train_eval_dl or train_dl)
             hybrid_scores = self._combine_scores(freq_scores, grad_scores)
 
-            masks = self._select_pruning_masks(hybrid_scores, iteration)
-            current_model = self._apply_pruning(current_model, masks, hybrid_scores)
+            layer_pruning_ratios = {name: self.config.hybrid_prune_fraction for name in hybrid_scores}
+            current_model, _ = self.pruning_util.prune_model_structured(current_model, layer_pruning_ratios, hybrid_scores)
 
             warmup_epochs = max(0, int(getattr(self.config, "hybrid_warmup_epochs", 0)))
             if warmup_epochs > 0:
@@ -513,5 +513,20 @@ class HybridFrequencyBaseline:
         return masks
 
     def _apply_pruning(self, model: torch.nn.Module, masks: Dict[str, np.ndarray], hybrid_scores: Dict[str, np.ndarray]) -> torch.nn.Module:
-        pruned_model = self.pruning_util.prune_model_structured(model, masks, hybrid_scores)
+        pruning_configs: Dict[str, LayerPruningConfig] = {}
+        for name in masks:
+            mask = masks[name]
+            scores = hybrid_scores[name]
+            num_filters = len(scores)
+            filters_to_keep = int(np.sum(mask))
+            pruning_ratio = (num_filters - filters_to_keep) / num_filters if num_filters > 0 else 0.0
+            pruning_configs[name] = LayerPruningConfig(
+                layer_name=name,
+                original_filters=num_filters,
+                filters_to_keep=filters_to_keep,
+                pruning_ratio=pruning_ratio,
+                importance_scores=scores,
+                mask=mask
+            )
+        pruned_model = self.pruning_util.apply_structured_pruning(model, pruning_configs)
         return pruned_model
