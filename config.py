@@ -86,7 +86,8 @@ class Config:
     mixup_prob: float = 0.5
 
     # ========== HYBRID BASELINE CONFIGURATION ==========
-    hybrid_iterations: int = 20
+    # hybrid_iterations: int = 20 # AnFix 
+    hybrid_iterations: int = 2
     hybrid_prune_fraction: float = 0.07
     hybrid_alpha: float = 0.5
     hybrid_kappa_beta: float = 0.1
