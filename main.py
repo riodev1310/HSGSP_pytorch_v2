@@ -125,7 +125,7 @@ def main(args):
                 f"kappa_ratio={kappa:.3f}, val_loss={loss_str}, val_acc={acc_str}"
             )
         pruned_model_path = os.path.join(config.models_dir, f"{args.task}_hybrid_pruned.pt")
-        torch.save(model, pruned_model_path)
+        torch.save(model.state_dict(), pruned_model_path)
         logger.info(f"Hybrid pruned model saved at {pruned_model_path}")
 
     if args.simple_finetune:
