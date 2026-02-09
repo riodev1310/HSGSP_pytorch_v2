@@ -63,7 +63,11 @@ def main(args):
 
     if args.model_path:
         logger.info(f"Loading model from {args.model_path}")
-        model = torch.load(args.model_path, map_location='cpu')
+        # model = torch.load(args.model_path, map_location='cpu')
+        # AnFix
+        model = _build_model(config, args.task)
+        state_dict = torch.load(args.model_path, map_location='cpu')
+        model.load_state_dict(state_dict)
     else:
         logger.info('Building new model...')
         model = _build_model(config, args.task)
