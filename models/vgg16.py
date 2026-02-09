@@ -1,5 +1,5 @@
 import torch
-from torch import nn
+import torch.nn as nn
 from typing import Tuple
 # from data.augmentation import DataAugmentation
 from config import Config
@@ -17,7 +17,7 @@ class VGG16:
             def __init__(self, config):
                 super().__init__()
                 self.config = config
-                in_channels = input_shape[0]
+                in_channels = input_shape[2]
                 self.features = nn.Sequential(
                     # Block 1
                     nn.Conv2d(in_channels, 64, kernel_size=3, padding=1),
@@ -121,7 +121,7 @@ class VGG16:
             def __init__(self, config):
                 super().__init__()
                 self.config = config
-                in_channels = input_shape[0]
+                in_channels = input_shape[2]
                 self.features = nn.Sequential(
                     # Block 1
                     nn.Conv2d(in_channels, 64, kernel_size=3, padding=1),
