@@ -94,7 +94,8 @@ class Config:
     hybrid_initial_kappa_ratio: float = 0.5
     hybrid_mode: str = 'original'  # 'frequency' or 'original'
     hybrid_min_filters: int = 8
-    hybrid_finetune_epochs: int = 20
+    # hybrid_finetune_epochs: int = 20 # AnFix
+    hybrid_finetune_epochs: int = 2
     hybrid_warmup_epochs: int = 0
     hybrid_warmup_lr: float = 2e-4
     hybrid_regrow_fraction: float = 0.15 # 0.15 by default
