@@ -61,13 +61,19 @@ def main(args):
         logger.info(f"Loading pruned model from {args.pruned_model_path}")
         pruned_model = torch.load(args.pruned_model_path, map_location='cpu')
 
+    # AnFix
+    model = _build_model(config, args.task)
     if args.model_path:
         logger.info(f"Loading model from {args.model_path}")
-        model = torch.load(args.model_path, map_location='cpu')
+        # model = torch.load(args.model_path, map_location='cpu')
         # AnFix
-        # model = _build_model(config, args.task)
-        # state_dict = torch.load(args.model_path, map_location='cpu')
-        # model.load_state_dict(state_dict)
+        checkpoint = torch.load(args.model_path, map_location='cpu')
+        if isinstance(checkpoint, dict):  # Kiểm tra an toàn
+            logger.info(f"Đây là trọng số mô hình")
+            model.load_state_dict(checkpoint)
+        else:
+            logger.info(f"Đây là toàn bộ mô hình")
+            model = checkpoint
     else:
         logger.info('Building new model...')
         model = _build_model(config, args.task)
