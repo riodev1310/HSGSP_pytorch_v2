@@ -61,19 +61,12 @@ def main(args):
         logger.info(f"Loading pruned model from {args.pruned_model_path}")
         pruned_model = torch.load(args.pruned_model_path, map_location='cpu')
 
-    # AnFix
-    model = _build_model(config, args.task)
+    
     if args.model_path:
         logger.info(f"Loading model from {args.model_path}")
         # model = torch.load(args.model_path, map_location='cpu')
-        # AnFix
-        checkpoint = torch.load(args.model_path, map_location='cpu')
-        if isinstance(checkpoint, dict):  # Kiểm tra an toàn
-            logger.info(f"Đây là trọng số mô hình")
-            model.load_state_dict(checkpoint)
-        else:
-            logger.info(f"Đây là toàn bộ mô hình")
-            model = checkpoint
+        model = _build_model(config, args.task)
+        model.load_state_dict(torch.load(args.model_path))
     else:
         logger.info('Building new model...')
         model = _build_model(config, args.task)
@@ -91,16 +84,21 @@ def main(args):
             train_eval_dataloader=train_clean_dl,
         )
         model_save_path = os.path.join(config.models_dir, f"{args.task}_trained_model.pt")
-        torch.save(model, model_save_path)
+        torch.save(model.state_dict(), model_save_path)
         logger.info(f"Trained model saved at {model_save_path}")
         visualizer.plot_training_history(
             history,
             save_path=os.path.join(config.plots_dir, 'training_history.png'),
         )
 
+    # baseline_for_eval = None
+    # if args.eval:
+    #     baseline_for_eval = copy.deepcopy(model)
     baseline_for_eval = None
-    if args.eval:
-        baseline_for_eval = copy.deepcopy(model)
+    if args.eval and args.train:
+        logger.info('Creating baseline copy for evaluation...')
+        baseline_for_eval = _build_model(config, args.task)
+        baseline_for_eval.load_state_dict(model.state_dict())
 
     hybrid_history = None
     if args.prune:
