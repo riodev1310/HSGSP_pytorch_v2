@@ -16,10 +16,10 @@ class Config:
     # Dataset specific
     num_classes_cifar10: int = 10
     num_classes_cifar100: int = 100
-    num_classes_imagenet: int = 1000
+    num_classes_imagenet: int = 200
     input_shape_cifar10: Tuple[int, int, int] = (3, 32, 32)
     input_shape_cifar100: Tuple[int, int, int] = (3, 32, 32)
-    input_shape_imagenet: Tuple[int, int, int] = (3, 224, 224)
+    input_shape_imagenet: Tuple[int, int, int] = (3, 64, 64)
 
     # ========== TRAINING CONFIGURATION ==========
     default_epochs: int = 300  # Tăng để converge tốt hơn (300 for CIFAR; 90-100 for ImageNet)
