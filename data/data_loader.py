@@ -148,7 +148,7 @@ class HSGSP_DataLoader:
 
         # Access splits
         train_ds = dataset["train"]
-        val_ds = dataset["validation"]
+        val_ds = dataset["valid"]
         test_ds = dataset["test"]
 
         # Define transforms for ImageNet (standard mean/std)
