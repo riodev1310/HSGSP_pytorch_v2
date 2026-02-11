@@ -143,7 +143,8 @@ class HSGSP_DataLoader:
         login(os.getenv("HF_TOKEN"))
 
         # Download dataset
-        dataset = load_dataset("ILSVRC/imagenet-1k")
+        # dataset = load_dataset("ILSVRC/imagenet-1k")
+        dataset = load_dataset("zh-plus/tiny-imagenet")
 
         # Access splits
         train_ds = dataset["train"]
