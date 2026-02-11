@@ -12,6 +12,7 @@ class ModelEvaluator:
     
     def __init__(self, config):
         self.config = config
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # Thêm dòng này
     
     def evaluate_model(self, 
                       model: torch.nn.Module,
@@ -21,6 +22,7 @@ class ModelEvaluator:
         print(f"\nEvaluating model on {dataset_name}...")
 
         model.eval()
+        model.to(self.device)
         total_loss = 0
         total_correct = 0
         total_top5_correct = 0
