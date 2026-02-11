@@ -146,7 +146,8 @@ class Config:
         self.tensorboard_dir = os.path.join(exp_root, "tensorboard_logs")
         self.results_dir = os.path.join(exp_root, "results")
         self.logs_dir = os.path.join(exp_root, "logs")
-        self.models_dir = os.path.join(exp_root, "models")
+        # self.models_dir = os.path.join(exp_root, "models")
+        self.models_dir = "/content/drive/MyDrive/ML_DL_models/cifar_model"
         self.plots_dir = os.path.join(exp_root, "plots")
 
         # Create directories
