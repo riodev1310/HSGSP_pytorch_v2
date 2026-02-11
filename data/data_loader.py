@@ -11,7 +11,7 @@ np.random.seed(SEED)
 torch.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 
-class HSGSPDataLoader:
+class HSGSP_DataLoader:
     """Unified dataset loader for HSGSP project"""
 
     def __init__(self, config):
