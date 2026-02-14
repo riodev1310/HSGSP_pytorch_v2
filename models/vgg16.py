@@ -3,6 +3,7 @@ import torch.nn as nn
 from typing import Tuple
 # from data.augmentation import DataAugmentation
 from config import Config
+from torchvision import models
 
 class VGGForCIFAR10(nn.Module):
     def __init__(self, config, num_classes: int, input_shape: Tuple[int, int, int]):
@@ -312,3 +313,11 @@ class VGG16:
     def build_tinyimagenet_model(self, num_classes: int, input_shape: Tuple[int, int, int]) -> nn.Module:
         """Build VGG16 model with BatchNormalization suitable for Tiny ImageNet"""
         return VGGForTinyImageNet(self.config, num_classes, input_shape)
+
+    def load_vgg16bn_pretrained(self, num_classes: int = 1000) -> nn.Module:
+        """Load VGG16BN model with pretrained weights on ImageNet"""
+        model = models.vgg16_bn(weights=models.VGG16_BN_Weights.IMAGENET1K_V1)
+        if num_classes != 1000:
+            # Adjust the classifier for a different number of classes
+            model.classifier[6] = nn.Linear(model.classifier[6].in_features, num_classes)
+        return model
