@@ -37,7 +37,7 @@ def _build_model(config: Config, task: str):
             input_shape=config.input_shape_cifar10,
         )
     if task == 'cifar100':
-        return builder.build_vgg16_model(
+        return builder.build_cifar100_model(
             num_classes=config.num_classes_cifar100,
             input_shape=config.input_shape_cifar100,
         )
