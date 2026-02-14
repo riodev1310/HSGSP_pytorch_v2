@@ -44,6 +44,7 @@ def _build_model(config: Config, task: str):
     if task == 'imagenet':
         return builder.build_tinyimagenet_model(
             num_classes=config.num_classes_imagenet,
+            input_shape=config.input_shape_imagenet
         )
     raise ValueError(f"Unsupported task for VGG16: {task}")
 
