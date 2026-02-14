@@ -70,9 +70,9 @@ class Config:
     # ========== PRUNING CONFIGURATION ==========
     frequency_bands: Dict[str, tuple] = None
     complexity_weights: Dict[str, float] = None
-    max_global_pruning_ratio: float = 0.0  # Disable pruning
-    min_global_keep: float = 1.0
-    max_accuracy_drop: float = 0.0
+    max_global_pruning_ratio: float = 0.85  # Disable pruning
+    min_global_keep: float = 0.3
+    max_accuracy_drop: float = 0.01
     accuracy_guard_center: float = 0.92
     accuracy_guard_sharpness: float = 0.5
 
@@ -100,7 +100,7 @@ class Config:
     hybrid_regrow_fraction: float = 0.15
 
     frequency_regularization_layers: int = 4  # Disable
-    frequency_entropy_beta: float = 0.0
+    frequency_entropy_beta: float = 0.05
     frequency_entropy_target_batches: int = 8
     frequency_entropy_refresh_interval: int = 3
     frequency_entropy_layer_weights: Dict[str, float] = field(default_factory=dict)
