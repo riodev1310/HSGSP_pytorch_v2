@@ -19,7 +19,7 @@ class Config:
     num_classes_imagenet: int = 1000
     input_shape_cifar10: Tuple[int, int, int] = (3, 32, 32)
     input_shape_cifar100: Tuple[int, int, int] = (3, 32, 32)
-    input_shape_imagenet: Tuple[int, int, int] = (3, 64, 64)
+    input_shape_imagenet: Tuple[int, int, int] = (3, 224, 224)
 
     # ========== TRAINING CONFIGURATION ==========
     default_epochs: int = 200  # Tăng để converge tốt hơn (benchmark: 200-300 cho ~70%+ acc)
