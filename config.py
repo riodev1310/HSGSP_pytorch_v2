@@ -18,7 +18,7 @@ class Config:
     num_classes_cifar100: int = 100
     num_classes_imagenet: int = 200
     input_shape_cifar10: Tuple[int, int, int] = (3, 32, 32)
-    input_shape_cifar100: Tuple[int, int, int] = (3, 32, 32)
+    input_shape_cifar100: Tuple[int, int, int] = (3, 128, 128)
     input_shape_imagenet: Tuple[int, int, int] = (3, 64, 64)
 
     # ========== TRAINING CONFIGURATION ==========
