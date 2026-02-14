@@ -42,7 +42,7 @@ def _build_model(config: Config, task: str):
             input_shape=config.input_shape_cifar100,
         )
     if task == 'imagenet':
-        return builder.build_vgg16_model(
+        return builder.build_tinyimagenet_model(
             num_classes=config.num_classes_imagenet,
             input_shape=config.input_shape_imagenet,
         )
