@@ -16,7 +16,7 @@ class Config:
     # Dataset specific
     num_classes_cifar10: int = 10
     num_classes_cifar100: int = 100
-    num_classes_imagenet: int = 200
+    num_classes_imagenet: int = 1000
     input_shape_cifar10: Tuple[int, int, int] = (3, 32, 32)
     input_shape_cifar100: Tuple[int, int, int] = (3, 32, 32)
     input_shape_imagenet: Tuple[int, int, int] = (3, 64, 64)
