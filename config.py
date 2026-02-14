@@ -87,8 +87,8 @@ class Config:
     cutout_length: int = 8  # Adjust cho 64x64 images
 
     # ========== HYBRID BASELINE CONFIGURATION ==========
-    hybrid_iterations: int = 0  # Disable
-    hybrid_prune_fraction: float = 0.0
+    hybrid_iterations: int = 20  # Disable
+    hybrid_prune_fraction: float = 0.07
     hybrid_alpha: float = 0.5
     hybrid_kappa_beta: float = 0.1
     hybrid_initial_kappa_ratio: float = 0.5
@@ -97,10 +97,16 @@ class Config:
     hybrid_finetune_epochs: int = 20
     hybrid_warmup_epochs: int = 0
     hybrid_warmup_lr: float = 2e-4
-    hybrid_regrow_fraction: float = 0.0
+    hybrid_regrow_fraction: float = 0.15
 
-    frequency_regularization_layers: int = 0  # Disable
+    frequency_regularization_layers: int = 4  # Disable
     frequency_entropy_beta: float = 0.0
+    frequency_entropy_target_batches: int = 8
+    frequency_entropy_refresh_interval: int = 3
+    frequency_entropy_layer_weights: Dict[str, float] = field(default_factory=dict)
+   
+    frequency_regularization_layers: int = 4 # 4 | Number of layers to apply frequency regularization
+    frequency_entropy_beta: float = 0.05 # 0.05 | Weight for frequency entropy loss
     frequency_entropy_target_batches: int = 8
     frequency_entropy_refresh_interval: int = 3
     frequency_entropy_layer_weights: Dict[str, float] = field(default_factory=dict)
@@ -111,11 +117,11 @@ class Config:
     frn_hidden_units: Tuple[int, ...] = (64, 32)
     frn_activation_batches: int = 512
     frn_min_validation_samples: int = 128
-    frn_dropout_rate: float = 0.05
+    frn_dropout_rate: float = 0.05 # 0.02 by default
     frn_use_batchnorm: bool = False
     frn_use_activation_features: bool = False
     frn_low_vs_rest: bool = False
-    frn_architecture: str = "dense"
+    frn_architecture: str = "dense"  # 'dense' or 'residual'
     frn_ema_beta: float = 0.8
     frn_sharpen_gamma: float = 2.0
     frn_initial_lr: float = 1e-4
